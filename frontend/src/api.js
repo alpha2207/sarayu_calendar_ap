@@ -1,7 +1,7 @@
 // src/api.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://sarayu-calendar-api.vercel.app';
 
 // Create a new event
 export const createEvent = (eventData, userId) => {

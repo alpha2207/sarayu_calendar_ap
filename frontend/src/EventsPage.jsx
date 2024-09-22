@@ -14,6 +14,8 @@ function EventsPage({ userId }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
 
+    const [time, onTimeChange] = useState('10:00');
+
     const [updateTitle, setUpdatedTitle] = useState('');
     const [updatedDescription, setUpdatedDescription] = useState('');
     console.log(events);
@@ -36,7 +38,7 @@ function EventsPage({ userId }) {
     // Create a new event
     const handleCreateEvent = () => {
         const date = value;
-        const newEvent = { userId, title, description, date };
+        const newEvent = { userId, title, description, date, time };
         createEvent(newEvent, userId)
             .then((response) => {
                 // Add the newly created event to the existing list of events
@@ -48,8 +50,8 @@ function EventsPage({ userId }) {
     };
 
     // Update an Event 
-    const handleUpdateEvent = (eventIndex, date) => {
-        updateEvent(userId, eventIndex, { title: updateTitle, description: updatedDescription, date })
+    const handleUpdateEvent = (eventIndex, date, time) => {
+        updateEvent(userId, eventIndex, { title: updateTitle, description: updatedDescription, date, time })
             .then(() => {
                 // Remove the deleted event from the events list
                 setEvents((prevEvents) =>
@@ -92,7 +94,7 @@ function EventsPage({ userId }) {
                                         <p>{event.description}</p>
                                     </div>
                                     <div className='flex items-center'>
-                                        <p className='mr-auto p-[1rem] text-sm'>{new Date(event.date).toLocaleDateString('en-GB')}</p>
+                                        <p className='mr-auto p-[1rem] text-sm'>{new Date(event.date).toLocaleDateString('en-GB')} - {event.time}</p>
                                         <button onClick={() => {
                                             setUpdatedTitle(event.title);
                                             setUpdatedDescription(event.description);
@@ -124,12 +126,14 @@ function EventsPage({ userId }) {
                                                 placeholder="Event Description"
                                                 value={updatedDescription}
                                                 onChange={(e) => setUpdatedDescription(e.target.value)} className="input input-bordered w-full" />
+
+
                                         </label>
 
 
                                         <div className="modal-action">
                                             <form method="dialog">
-                                                <button className='btn mr-4' onClick={() => handleUpdateEvent(index, event.date)}>Update Event</button>
+                                                <button className='btn mr-4' onClick={() => handleUpdateEvent(index, event.date, event.time)}>Update Event</button>
                                                 {/* if there is a button in form, it will close the modal */}
                                                 <button className="btn">Close</button>
                                             </form>
@@ -159,13 +163,25 @@ function EventsPage({ userId }) {
                     </label>
                     <label className="form-control w-full">
                         <div className="label">
-                            <span className="label-text">Event Title</span>
+                            <span className="label-text">Event Description</span>
                         </div>
                         <input type="text"
                             placeholder="Event Description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)} className="input input-bordered w-full" />
+
                     </label>
+                    <label className="form-control w-full">
+                        <div className="label">
+                            <span className="label-text">Event Time</span>
+                        </div>
+                        <input type="time"
+                            placeholder="Event Description"
+                            value={time}
+                            onChange={(e) => onTimeChange(e.target.value)} className="input input-bordered w-full" />
+
+                    </label>
+
 
 
                     <div className="modal-action">

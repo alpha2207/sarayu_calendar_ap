@@ -70,8 +70,8 @@ app.post('/login', async (req, res) => {
 
 // Create a new event (Create operation)
 app.post('/events/:userId', async (req, res) => {
-  const { title, description, date } = req.body;
-  const userId = req.params.userId; 
+  const { title, description, date, time } = req.body;
+  const userId = req.params.userId;
 
   try {
     const userRef = admin.firestore().collection('users').doc(userId);
@@ -82,6 +82,7 @@ app.post('/events/:userId', async (req, res) => {
         title,
         description,
         date,
+        time,
         createdAt: new Date().toISOString(),
       }),
     });
@@ -114,7 +115,7 @@ app.get('/events/:userId', async (req, res) => {
 // Update an event (Update operation)
 app.put('/events/:userId/:eventIndex', async (req, res) => {
   const { userId, eventIndex } = req.params;
-  const { title, description, date } = req.body;
+  const { title, description, date, time } = req.body;
 
   try {
     const userRef = admin.firestore().collection('users').doc(userId);
@@ -125,10 +126,10 @@ app.put('/events/:userId/:eventIndex', async (req, res) => {
     }
 
     const events = userDoc.data().events || [];
-    
+
     // Update the specified event
     if (eventIndex >= 0 && eventIndex < events.length) {
-      events[eventIndex] = { title, description, date, createdAt: new Date().toISOString() };
+      events[eventIndex] = { title, description, date, time, createdAt: new Date().toISOString() };
       await userRef.update({ events });
       res.status(200).json({ message: 'Event updated successfully!' });
     } else {

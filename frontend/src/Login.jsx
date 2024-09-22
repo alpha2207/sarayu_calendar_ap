@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import EventsPage from './EventsPage';
-
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 function App() {
   const [userId, setUserId] = useState('');
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -10,10 +12,38 @@ function App() {
   const [loginState, setLoginState] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-    // Assume login is successful (you can integrate Firebase Auth or any authentication service)
-    setIsLoggedIn(true);
+
+    if (!loginState) {
+      try {
+        const result = await axios.post('http://localhost:3000/register', {
+          email, password
+        });
+        setUserId(result.data.uid);
+
+        alert("User Registration Successful");
+        setIsLoggedIn(true);
+        // navigate('/');
+      } catch (error) {
+        alert(error?.response.data.message);
+
+      }
+    } else {
+      try {
+        const result = await axios.post('http://localhost:3000/login', {
+          email, password
+        });
+        setUserId(result.data.uid);
+
+        alert("Login Successful");
+        setIsLoggedIn(true);
+        // navigate('/');
+      } catch (error) {
+        alert(error?.response.data.message);
+      }
+    }
+
   };
 
   return (
@@ -22,7 +52,7 @@ function App() {
         <EventsPage userId={userId} />
       ) : (
         <div className='h-screen flex justify-center items-center'>
-          <form onSubmit={handleLogin} className='min-w-[400px] border border-slate-500 rounded-lg p-4 shadow-lg'>
+          <form onSubmit={handleAuth} className='min-w-[400px] border border-slate-500 rounded-lg p-4 shadow-lg'>
             <h1 className='text-3xl font-bold'>{loginState ? 'Login' : 'Register'}</h1>
             <div className="divider my-1"></div>
             <label className="form-control w-full">
@@ -42,7 +72,7 @@ function App() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} className="input input-bordered w-full" />
             </label>
-            <span className='text-xs mt-1 cursor-pointer hover:underline' href="#" onClick={() => setLoginState(!loginState)}> Didn&apos;t have a account? </span>
+            <span className='text-xs mt-1 cursor-pointer hover:underline' href="#" onClick={() => setLoginState(!loginState)}>{loginState ? `Didn't have an account?` : 'Already have an account?'} </span>
             <button type="submit" className='btn mt-4 min-w-full'>{loginState ? 'Login' : 'Register'}</button>
           </form>
         </div>

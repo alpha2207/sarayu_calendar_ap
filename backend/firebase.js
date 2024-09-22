@@ -1,12 +1,13 @@
-// firebase.js
 const admin = require('firebase-admin');
 const serviceAccount = require('./firebase-service-account.json');
 
+// Initialize the Firebase app
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://calendar-app-e41af-default-rtdb.asia-southeast1.firebasedatabase.app"
 });
 
-const database = admin.database();
+// Initialize Firestore
+const firestore = admin.firestore();
+const auth = admin.auth();
 
-module.exports = { database };
+module.exports = { auth, admin, firestore };

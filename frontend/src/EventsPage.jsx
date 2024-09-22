@@ -2,49 +2,71 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Calendar from 'react-calendar';
 import './EventsPage.css'
-import { getEvents, createEvent, deleteEvent } from './api';
+import { getEvents, createEvent, deleteEvent, updateEvent } from './api';
 import { MdDelete, MdEdit } from "react-icons/md";
+import { useNavigate } from 'react-router-dom';
 
 
 function EventsPage({ userId }) {
     const [value, onChange] = useState(new Date());
-    const [events, setEvents] = useState([{
-        title: "Event #1",
-        description: "This is desc",
-        date: '9 sep 2024'
-    }]);
+    const navigate = useNavigate();
+    const [events, setEvents] = useState([]);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [date, setDate] = useState('');
+
+    const [updateTitle, setUpdatedTitle] = useState('');
+    const [updatedDescription, setUpdatedDescription] = useState('');
+    console.log(events);
+
 
     useEffect(() => {
         // Fetch all events for the logged-in user
+        // if (!userId) navigate('/login');
+        if (!userId) navigate('/login');
+
+
         getEvents(userId)
             .then((response) => {
                 setEvents(response.data);
                 console.log(response);
-
             })
             .catch((error) => console.error('Error fetching events:', error));
-    }, [userId]);
+    }, [userId, navigate]);
 
     // Create a new event
     const handleCreateEvent = () => {
+        const date = value;
         const newEvent = { userId, title, description, date };
-        createEvent(newEvent)
+        createEvent(newEvent, userId)
             .then((response) => {
                 // Add the newly created event to the existing list of events
-                setEvents([...events, response.data]);
+                console.log(response);
+
+                setEvents([...events, newEvent]);
             })
             .catch((error) => console.error('Error creating event:', error));
     };
 
-    // Delete an event
-    const handleDeleteEvent = (eventId) => {
-        deleteEvent(userId, eventId)
+    // Update an Event 
+    const handleUpdateEvent = (eventIndex, date) => {
+        updateEvent(userId, eventIndex, { title: updateTitle, description: updatedDescription, date })
             .then(() => {
                 // Remove the deleted event from the events list
-                setEvents(events.filter((event) => event.id !== eventId));
+                setEvents((prevEvents) =>
+                    prevEvents.map((event, index) =>
+                        index === eventIndex ? { title: updateTitle, description: updatedDescription, date } : event
+                    )
+                );
+            })
+            .catch((error) => console.error('Error deleting event:', error));
+    };
+
+    // Delete an event
+    const handleDeleteEvent = (eventIndex) => {
+        deleteEvent(userId, eventIndex)
+            .then(() => {
+                // Remove the deleted event from the events list
+                setEvents(events.filter((_, index) => index !== eventIndex));
             })
             .catch((error) => console.error('Error deleting event:', error));
     };
@@ -59,23 +81,66 @@ function EventsPage({ userId }) {
                 <h1 className='text-2xl font-bold'>Your Events</h1>
                 <div className="divider m-1"></div>
                 <ul className='min-w-[25rem]'>
-                    {events.map((event) => (
-                        <li key={event.id}>
+                    {events.length > 0 ? events.map((event, index) => (
+                        <>
+                            <li key={index} className='mb-4'>
 
-                            <div className="collapse collapse-arrow bg-base-200 p-2">
-                                <input type="radio" name="my-accordion-2" defaultChecked />
-                                <div className="collapse-title text-xl font-medium">{event.title}</div>
-                                <div className="collapse-content">
-                                    <p>{event.description}</p>
+                                <div className="collapse collapse-arrow bg-base-200 p-2">
+                                    <input type="radio" name="my-accordion-2" defaultChecked />
+                                    <div className="collapse-title text-xl font-medium">{event.title}</div>
+                                    <div className="collapse-content">
+                                        <p>{event.description}</p>
+                                    </div>
+                                    <div className='flex items-center'>
+                                        <p className='mr-auto p-[1rem] text-sm'>{new Date(event.date).toLocaleDateString('en-GB')}</p>
+                                        <button onClick={() => {
+                                            setUpdatedTitle(event.title);
+                                            setUpdatedDescription(event.description);
+                                            document.getElementById(`edit_modal_${index}`).showModal();
+                                        }} className="btn"><MdEdit style={{ color: "yellow", fontSize: '1rem' }} /> Edit</button>
+                                        <button className="btn" onClick={() => handleDeleteEvent(index)}><MdDelete style={{ color: "red", fontSize: '1.3rem' }} /> Delete</button>
+                                    </div>
                                 </div>
-                                <div className='flex justify-end'>
-                                    <button className="btn"><MdEdit style={{ color: "yellow", fontSize: '1rem' }} /> Edit</button>
-                                    <button className="btn" onClick={() => handleDeleteEvent(event.id)}><MdDelete style={{ color: "red", fontSize: '1.3rem' }} /> Delete</button>
-                                </div>
-                            </div>
 
-                        </li>
-                    ))}
+
+                                <dialog id={`edit_modal_${index}`} className="modal">
+                                    <div className="modal-box">
+                                        <h2>Update the Event</h2>
+                                        <div className='divider'></div>
+                                        <label className="form-control w-full">
+                                            <div className="label">
+                                                <span className="label-text">Event Title</span>
+                                            </div>
+                                            <input type="text"
+                                                placeholder="Event Title"
+                                                value={updateTitle}
+                                                onChange={(e) => setUpdatedTitle(e.target.value)} className="input input-bordered w-full" />
+                                        </label>
+                                        <label className="form-control w-full">
+                                            <div className="label">
+                                                <span className="label-text">Event Title</span>
+                                            </div>
+                                            <input type="text"
+                                                placeholder="Event Description"
+                                                value={updatedDescription}
+                                                onChange={(e) => setUpdatedDescription(e.target.value)} className="input input-bordered w-full" />
+                                        </label>
+
+
+                                        <div className="modal-action">
+                                            <form method="dialog">
+                                                <button className='btn mr-4' onClick={() => handleUpdateEvent(index, event.date)}>Update Event</button>
+                                                {/* if there is a button in form, it will close the modal */}
+                                                <button className="btn">Close</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </dialog>
+                            </li>
+
+                        </>
+
+                    )) : "No Events!"}
                 </ul>
             </div>
 
@@ -104,8 +169,8 @@ function EventsPage({ userId }) {
 
 
                     <div className="modal-action">
+                        <button className='btn mr-4' onClick={handleCreateEvent}>Create Event</button>
                         <form method="dialog">
-                            <button className='btn mr-4' onClick={handleCreateEvent}>Create Event</button>
                             {/* if there is a button in form, it will close the modal */}
                             <button className="btn">Close</button>
                         </form>

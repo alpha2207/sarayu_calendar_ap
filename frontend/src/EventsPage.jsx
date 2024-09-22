@@ -18,7 +18,8 @@ function EventsPage({ userId }) {
 
     const [updateTitle, setUpdatedTitle] = useState('');
     const [updatedDescription, setUpdatedDescription] = useState('');
-    console.log(events);
+    const [updatedTime, setUpdatedTime] = useState('');
+    const [filter, setFilter] = useState('All');
 
 
     useEffect(() => {
@@ -29,11 +30,40 @@ function EventsPage({ userId }) {
 
         getEvents(userId)
             .then((response) => {
-                setEvents(response.data);
-                console.log(response);
+                let eventsArray = response.data;
+
+                // Get today's date
+                const today = new Date();
+
+                if (filter === 'Month') {
+                    // Get the start of the current month and the end of the current month
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of the current month
+                    console.log(startOfMonth,endOfMonth);
+                    
+                    // Filter events that occur within this month
+                    eventsArray = eventsArray.filter((event) => {
+                        const eventDate = new Date(event.date);
+                        return eventDate >= startOfMonth && eventDate <= endOfMonth;
+                    });
+
+                } else if (filter === 'Week') {
+                    // Get the date 7 days from now
+                    const endOfWeek = new Date(today);
+                    endOfWeek.setDate(today.getDate() + 7);
+
+                    // Filter events that occur within the next 7 days
+                    eventsArray = eventsArray.filter((event) => {
+                        const eventDate = new Date(event.date);
+                        return eventDate >= today && eventDate <= endOfWeek;
+                    });
+                }
+
+                // Update the state with the filtered events
+                setEvents(eventsArray);
             })
             .catch((error) => console.error('Error fetching events:', error));
-    }, [userId, navigate]);
+    }, [userId, navigate, filter]);
 
     // Create a new event
     const handleCreateEvent = () => {
@@ -56,7 +86,7 @@ function EventsPage({ userId }) {
                 // Remove the deleted event from the events list
                 setEvents((prevEvents) =>
                     prevEvents.map((event, index) =>
-                        index === eventIndex ? { title: updateTitle, description: updatedDescription, date } : event
+                        index === eventIndex ? { title: updateTitle, description: updatedDescription, date, time: updatedTime } : event
                     )
                 );
             })
@@ -82,6 +112,12 @@ function EventsPage({ userId }) {
             <div>
                 <h1 className='text-2xl font-bold'>Your Events</h1>
                 <div className="divider m-1"></div>
+                <div className='flex gap-2 pb-4 px-2 justify-end'>
+                    <button className="btn" className onClick={() => setFilter('All')}>All</button>
+                    <button className="btn" onClick={() => setFilter('Week')}>In 7 Days</button>
+                    <button className="btn" onClick={() => setFilter('Month')}>In 1 Month</button>
+
+                </div>
                 <ul className='min-w-[25rem]'>
                     {events.length > 0 ? events.map((event, index) => (
                         <>
@@ -98,6 +134,7 @@ function EventsPage({ userId }) {
                                         <button onClick={() => {
                                             setUpdatedTitle(event.title);
                                             setUpdatedDescription(event.description);
+                                            setUpdatedTime(event.time)
                                             document.getElementById(`edit_modal_${index}`).showModal();
                                         }} className="btn"><MdEdit style={{ color: "yellow", fontSize: '1rem' }} /> Edit</button>
                                         <button className="btn" onClick={() => handleDeleteEvent(index)}><MdDelete style={{ color: "red", fontSize: '1.3rem' }} /> Delete</button>
@@ -120,16 +157,23 @@ function EventsPage({ userId }) {
                                         </label>
                                         <label className="form-control w-full">
                                             <div className="label">
-                                                <span className="label-text">Event Title</span>
+                                                <span className="label-text">Event Description</span>
                                             </div>
                                             <input type="text"
                                                 placeholder="Event Description"
                                                 value={updatedDescription}
                                                 onChange={(e) => setUpdatedDescription(e.target.value)} className="input input-bordered w-full" />
-
-
                                         </label>
 
+                                        <label className="form-control w-full">
+                                            <div className="label">
+                                                <span className="label-text">Event Time</span>
+                                            </div>
+                                            <input type="time"
+                                                placeholder="Event Description"
+                                                value={updatedTime}
+                                                onChange={(e) => setUpdatedTime(e.target.value)} className="input input-bordered w-full" />
+                                        </label>
 
                                         <div className="modal-action">
                                             <form method="dialog">
@@ -194,7 +238,7 @@ function EventsPage({ userId }) {
                 </div>
             </dialog>
 
-        </div >
+        </div>
     );
 }
 EventsPage.propTypes = {

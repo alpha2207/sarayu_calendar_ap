@@ -7,10 +7,8 @@ function App() {
     <Router>
       <div>
         <Routes>
-          {/* Define the route for the login page */}
           <Route path="/" element={<EventForm />} />
           <Route path="/login" element={<LoginPage />} />
-          {/* Define the route for the event form page (after login) */}
         </Routes>
       </div>
     </Router>

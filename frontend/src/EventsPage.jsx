@@ -23,8 +23,6 @@ function EventsPage({ userId }) {
 
 
     useEffect(() => {
-        // Fetch all events for the logged-in user
-        // if (!userId) navigate('/login');
         if (!userId) navigate('/login');
 
 
@@ -32,13 +30,13 @@ function EventsPage({ userId }) {
             .then((response) => {
                 let eventsArray = response.data;
 
-                // Get today's date
+
                 const today = new Date();
 
                 if (filter === 'Month') {
                     // Get the start of the current month and the end of the current month
                     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of the current month
+                    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                     console.log(startOfMonth, endOfMonth);
 
                     // Filter events that occur within this month
@@ -59,7 +57,6 @@ function EventsPage({ userId }) {
                     });
                 }
 
-                // Update the state with the filtered events
                 setEvents(eventsArray);
             })
             .catch((error) => console.error('Error fetching events:', error));
@@ -67,17 +64,15 @@ function EventsPage({ userId }) {
 
     useEffect(() => {
         const checkReminders = () => {
-            const now = new Date(); // Current date and time
+            const now = new Date();
 
             events.forEach(event => {
                 if (event.date && event.time) {
-                    // Assuming event.date is "22/09/2024" and event.time is "15:00"
 
-                    // Parse the date (day/month/year) and time (hour:minute) separately
                     const [day, month, year] = new Date(event.date).toLocaleDateString('en-GB').split('/');
                     const [hours, minutes] = event.time.split(':');
 
-                    // Create a Date object combining date and time
+
                     const reminderDateTime = new Date(year, month - 1, day, hours, minutes);
                     console.log(reminderDateTime, now);
 
@@ -89,18 +84,16 @@ function EventsPage({ userId }) {
                         reminderDateTime.getHours() === now.getHours() &&
                         reminderDateTime.getMinutes() === now.getMinutes()
                     ) {
-                        // Trigger notification
+
                         alert(`Reminder: ${event.title}`);
-                        // Optionally handle further actions (e.g., mark event as reminded)
                     }
                 }
             });
         };
 
-        // Set interval to check reminders every minute
-        const interval = setInterval(checkReminders, 1000); // Check every minute
+        const interval = setInterval(checkReminders, 1000); 
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, [events]);
 
 
@@ -111,7 +104,6 @@ function EventsPage({ userId }) {
         const newEvent = { userId, title, description, date, time };
         createEvent(newEvent, userId)
             .then((response) => {
-                // Add the newly created event to the existing list of events
                 console.log(response);
 
                 setEvents([...events, newEvent]);
@@ -123,7 +115,6 @@ function EventsPage({ userId }) {
     const handleUpdateEvent = (eventIndex, date, time) => {
         updateEvent(userId, eventIndex, { title: updateTitle, description: updatedDescription, date, time })
             .then(() => {
-                // Remove the deleted event from the events list
                 setEvents((prevEvents) =>
                     prevEvents.map((event, index) =>
                         index === eventIndex ? { title: updateTitle, description: updatedDescription, date, time: updatedTime } : event
@@ -137,7 +128,6 @@ function EventsPage({ userId }) {
     const handleDeleteEvent = (eventIndex) => {
         deleteEvent(userId, eventIndex)
             .then(() => {
-                // Remove the deleted event from the events list
                 setEvents(events.filter((_, index) => index !== eventIndex));
             })
             .catch((error) => console.error('Error deleting event:', error));

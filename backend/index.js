@@ -1,12 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { admin } = require('./firebase'); // Import the Firebase admin instance
+const { admin } = require('./firebase');
 const cors = require('cors');
 
 const app = express();
 const port = 3000;
 
-// Allow CORS for all requests
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -15,22 +14,21 @@ app.post('/register', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Step 1: Create user in Firebase Auth
+
     const userRecord = await admin.auth().createUser({
       email,
       password,
     });
 
-    // Step 2: Add user details to Firestore with UID as document ID
+
     const userRef = admin.firestore().collection('users').doc(userRecord.uid);
     await userRef.set({
       email: userRecord.email,
       uid: userRecord.uid,
       createdAt: new Date().toISOString(),
-      events: [], // Initialize an empty array for events
+      events: [],
     });
 
-    // Step 3: Send response
     res.status(201).json({
       message: 'User registered successfully!',
       user: userRecord,
@@ -76,7 +74,7 @@ app.post('/events/:userId', async (req, res) => {
   try {
     const userRef = admin.firestore().collection('users').doc(userId);
 
-    // Update the user's document to push the new event into the events array
+
     await userRef.update({
       events: admin.firestore.FieldValue.arrayUnion({
         title,
@@ -105,7 +103,7 @@ app.get('/events/:userId', async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const events = userDoc.data().events || []; // Fetch events array
+    const events = userDoc.data().events || [];
     res.status(200).json(events);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching events: ' + error.message });
@@ -127,7 +125,7 @@ app.put('/events/:userId/:eventIndex', async (req, res) => {
 
     const events = userDoc.data().events || [];
 
-    // Update the specified event
+
     if (eventIndex >= 0 && eventIndex < events.length) {
       events[eventIndex] = { title, description, date, time, createdAt: new Date().toISOString() };
       await userRef.update({ events });
@@ -154,9 +152,8 @@ app.delete('/events/:userId/:eventIndex', async (req, res) => {
 
     const events = userDoc.data().events || [];
 
-    // Remove the specified event
     if (eventIndex >= 0 && eventIndex < events.length) {
-      events.splice(eventIndex, 1); // Remove the event at the specified index
+      events.splice(eventIndex, 1);
       await userRef.update({ events });
       res.status(200).json({ message: 'Event deleted successfully!' });
     } else {

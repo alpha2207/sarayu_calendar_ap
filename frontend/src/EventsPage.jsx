@@ -39,8 +39,8 @@ function EventsPage({ userId }) {
                     // Get the start of the current month and the end of the current month
                     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
                     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of the current month
-                    console.log(startOfMonth,endOfMonth);
-                    
+                    console.log(startOfMonth, endOfMonth);
+
                     // Filter events that occur within this month
                     eventsArray = eventsArray.filter((event) => {
                         const eventDate = new Date(event.date);
@@ -64,6 +64,46 @@ function EventsPage({ userId }) {
             })
             .catch((error) => console.error('Error fetching events:', error));
     }, [userId, navigate, filter]);
+
+    useEffect(() => {
+        const checkReminders = () => {
+            const now = new Date(); // Current date and time
+
+            events.forEach(event => {
+                if (event.date && event.time) {
+                    // Assuming event.date is "22/09/2024" and event.time is "15:00"
+
+                    // Parse the date (day/month/year) and time (hour:minute) separately
+                    const [day, month, year] = new Date(event.date).toLocaleDateString('en-GB').split('/');
+                    const [hours, minutes] = event.time.split(':');
+
+                    // Create a Date object combining date and time
+                    const reminderDateTime = new Date(year, month - 1, day, hours, minutes);
+                    console.log(reminderDateTime, now);
+
+                    // Compare reminder time with the current time
+                    if (
+                        reminderDateTime.getFullYear() === now.getFullYear() &&
+                        reminderDateTime.getMonth() === now.getMonth() &&
+                        reminderDateTime.getDate() === now.getDate() &&
+                        reminderDateTime.getHours() === now.getHours() &&
+                        reminderDateTime.getMinutes() === now.getMinutes()
+                    ) {
+                        // Trigger notification
+                        alert(`Reminder: ${event.title}`);
+                        // Optionally handle further actions (e.g., mark event as reminded)
+                    }
+                }
+            });
+        };
+
+        // Set interval to check reminders every minute
+        const interval = setInterval(checkReminders, 1000); // Check every minute
+
+        return () => clearInterval(interval); 
+    }, [events]);
+
+
 
     // Create a new event
     const handleCreateEvent = () => {
@@ -113,9 +153,9 @@ function EventsPage({ userId }) {
                 <h1 className='text-2xl font-bold'>Your Events</h1>
                 <div className="divider m-1"></div>
                 <div className='flex gap-2 pb-4 px-2 justify-end'>
-                    <button className="btn" onClick={() => setFilter('All')}>All</button>
-                    <button className="btn" onClick={() => setFilter('Week')}>In 7 Days</button>
-                    <button className="btn" onClick={() => setFilter('Month')}>In 1 Month</button>
+                    <button className={`btn ${filter === 'All' && 'bg-slate-900'}`} onClick={() => setFilter('All')}>All</button>
+                    <button className={`btn ${filter === 'Week' && 'bg-slate-900'}`} onClick={() => setFilter('Week')}>In 7 Days</button>
+                    <button className={`btn ${filter === 'Month' && 'bg-slate-900'}`} onClick={() => setFilter('Month')}>In 1 Month</button>
 
                 </div>
                 <ul className='min-w-[25rem]'>

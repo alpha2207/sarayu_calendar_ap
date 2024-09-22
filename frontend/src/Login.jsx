@@ -24,7 +24,8 @@ function App() {
         setIsLoggedIn(true);
         // navigate('/');
       } catch (error) {
-        alert(error?.response.data.message);
+        console.log(error);
+        alert("Please enter valid email address that is already not in use and strong password at least of 6 characters.");
 
       }
     } else {

@@ -113,7 +113,7 @@ function EventsPage({ userId }) {
                 <h1 className='text-2xl font-bold'>Your Events</h1>
                 <div className="divider m-1"></div>
                 <div className='flex gap-2 pb-4 px-2 justify-end'>
-                    <button className="btn" className onClick={() => setFilter('All')}>All</button>
+                    <button className="btn" onClick={() => setFilter('All')}>All</button>
                     <button className="btn" onClick={() => setFilter('Week')}>In 7 Days</button>
                     <button className="btn" onClick={() => setFilter('Month')}>In 1 Month</button>
 
